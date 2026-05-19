@@ -98,12 +98,21 @@ export default function FilesPage() {
       const safeName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
       const path     = `projects/${selectedProjectId}/${safeName}`
 
-      // 1. Upload Supabase Storage
+      // TESTE DE SESSÃO
+      const { data: sessionData } = await supabase.auth.getSession()
+      console.log('SESSION:', sessionData)
       const { error: upErr } = await supabase.storage
-        .from('kronos-files')
-        .upload(path, file, { upsert: false })
+      
+      .from('kronos-files')
+      .upload(path, file, { upsert: false })
+      console.log('UPLOAD ERROR:', upErr)
 
-      if (upErr) { showToast(`❌ Erro ao enviar: ${file.name}`); continue }
+      if (upErr) {
+  console.error('ERRO REAL STORAGE:', upErr)
+
+  showToast(`❌ ${upErr.message || 'Erro ao enviar arquivo.'}`)
+  continue
+}
 
       // 2. Registra no banco
       const { data: fileRecord, error: dbErr } = await supabase
