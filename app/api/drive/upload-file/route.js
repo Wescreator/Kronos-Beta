@@ -1,101 +1,93 @@
 import { createClient } from '@/lib/supabase/server'
-import { uploadFileToDrive } from '@/lib/drive'
-import { NextResponse } from 'next/server'
+import { NextResponse }  from 'next/server'
+import { google }        from 'googleapis'
+
+function getDriveClient() {
+  const rawKey = process.env.GOOGLE_PRIVATE_KEY || ''
+  // Garante que \n seja convertido em quebras de linha reais
+  const privateKey = rawKey.includes('\\n')
+    ? rawKey.replace(/\\n/g, '\n')
+    : rawKey
+
+  const auth = new google.auth.GoogleAuth({
+    credentials: {
+      client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+      private_key:  privateKey,
+    },
+    scopes: ['https://www.googleapis.com/auth/drive'],
+  })
+  return google.drive({ version: 'v3', auth })
+}
 
 export async function POST(request) {
   try {
-    console.log('==============================')
-    console.log('[UPLOAD DRIVE] INICIANDO')
-
+    // Autenticação
     const supabase = await createClient()
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
+    const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-      console.log('[UPLOAD DRIVE] Usuário não autenticado')
-      return NextResponse.json(
-        { error: 'Não autenticado.' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 })
     }
 
+    // Lê o FormData
     const formData = await request.formData()
+    const file     = formData.get('file')
+    const fileId   = formData.get('fileId')   || null
+    const folderId = formData.get('folderId') || null
 
-    const file = formData.get('file')
-    const fileId = formData.get('fileId')
-    const folderId = formData.get('folderId')
+    if (!file)     return NextResponse.json({ error: 'Arquivo não enviado.' },   { status: 400 })
+    if (!folderId) return NextResponse.json({ error: 'folderId não informado.' }, { status: 400 })
 
-    console.log('[UPLOAD DRIVE] file:', file?.name)
-    console.log('[UPLOAD DRIVE] fileId:', fileId)
-    console.log('[UPLOAD DRIVE] folderId:', folderId)
-
-    if (!file || !folderId) {
-      console.log('[UPLOAD DRIVE] Dados obrigatórios ausentes')
-
-      return NextResponse.json(
-        { error: 'Arquivo e folderId são obrigatórios.' },
-        { status: 400 }
-      )
+    // Valida credenciais
+    if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
+      return NextResponse.json({ error: 'Credenciais Google não configuradas no servidor.' }, { status: 500 })
     }
 
+    // Converte o arquivo para Buffer
     const arrayBuffer = await file.arrayBuffer()
+    const buffer      = Buffer.from(arrayBuffer)
+    const mimeType    = file.type || 'application/octet-stream'
 
-    console.log('[UPLOAD DRIVE] Buffer size:', arrayBuffer.byteLength)
+    // Cria stream a partir do Buffer
+    const stream = new (require('stream').PassThrough)()
+    stream.end(buffer)
 
-    const buffer = Buffer.from(arrayBuffer)
-
-    const result = await uploadFileToDrive({
-      fileName: file.name,
-      fileBuffer: buffer,
-      mimeType: file.type || 'application/octet-stream',
-      folderId,
+    // Upload para o Google Drive
+    const drive = getDriveClient()
+    const { data: driveFile } = await drive.files.create({
+      requestBody: {
+        name:    file.name,
+        parents: [folderId],
+      },
+      media: {
+        mimeType,
+        body: stream,
+      },
+      fields: 'id, name, webViewLink',
     })
 
-    console.log('[UPLOAD DRIVE] RESULTADO:', result)
-
-    if (!result.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: result.error,
-        },
-        { status: 500 }
-      )
-    }
-
-    if (fileId) {
-      const { error: updateError } = await supabase
+    // Atualiza o banco com o ID do arquivo no Drive
+    if (fileId && driveFile?.id) {
+      await supabase
         .from('files')
-        .update({
-          drive_file_id: result.driveFileId,
-          drive_url: result.driveUrl,
-        })
+        .update({ drive_file_id: driveFile.id })
         .eq('id', fileId)
-
-      if (updateError) {
-        console.log('[UPLOAD DRIVE] ERRO AO SALVAR DB:', updateError)
-      }
     }
-
-    console.log('[UPLOAD DRIVE] SUCESSO')
 
     return NextResponse.json({
-      success: true,
-      driveFileId: result.driveFileId,
-      driveUrl: result.driveUrl,
+      success:     true,
+      driveFileId: driveFile.id,
+      driveUrl:    driveFile.webViewLink,
     })
-  } catch (err) {
-    console.error('[UPLOAD DRIVE] ERRO COMPLETO:')
-    console.error(err)
 
-    return NextResponse.json(
-      {
-        success: false,
-        error: err.message,
-      },
-      { status: 500 }
-    )
+  } catch (err) {
+    console.error('[Drive Upload Error]', {
+      message: err.message,
+      code:    err.code,
+      status:  err.status,
+    })
+    return NextResponse.json({
+      error:   err.message || 'Erro ao fazer upload para o Drive.',
+      code:    err.code    || null,
+    }, { status: 500 })
   }
 }

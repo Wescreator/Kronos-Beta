@@ -186,32 +186,40 @@ export default function FilesPage() {
 
         successCount++
 
-        // Sync Google Drive
-        const driveFolderId =
-          selectedProject?.drive_folder_id
+        // Sincroniza com Google Drive
+const driveFolderId = selectedProject?.drive_files_folder_id
 
-        if (fileRecord && driveFolderId) {
-          const driveForm = new FormData()
+if (fileRecord && driveFolderId) {
+  try {
+    const driveForm = new FormData()
+    driveForm.append('file',     file)
+    driveForm.append('fileId',   fileRecord.id)
+    driveForm.append('folderId', driveFolderId)
 
-          driveForm.append('file', file)
-          driveForm.append('fileId', fileRecord.id)
-          driveForm.append('folderId', driveFolderId)
+    const driveRes  = await fetch('/api/drive/upload-file', {
+      method: 'POST',
+      body:   driveForm,
+    })
+    const driveData = await driveRes.json()
 
-          fetch('/api/drive/upload-file', {
-            method: 'POST',
-            body: driveForm,
-          })
-            .then(async res => {
-              const data = await res.json()
-              console.log('[Drive Upload]', data)
-            })
-            .catch(err => {
-              console.error(
-                '[Drive Upload ERROR]',
-                err
-              )
-            })
-        }
+    if (!driveRes.ok || !driveData.success) {
+      console.error('[Drive] Falha:', driveData)
+      // Mostra o erro real para facilitar diagnóstico
+      showToast(`⚠️ Arquivo salvo, mas falhou no Drive: ${driveData.error || 'erro desconhecido'}`)
+    } else {
+      console.log('[Drive] Sucesso:', driveData.driveFileId)
+    }
+  } catch (driveErr) {
+    console.error('[Drive] Erro inesperado:', driveErr.message)
+    showToast('⚠️ Arquivo salvo no sistema. Falha na sincronização com o Drive.')
+  }
+} else {
+  // Avisa se o projeto não tem pasta configurada
+  if (!driveFolderId) {
+    console.warn('[Drive] Projeto sem drive_files_folder_id:', selectedProjectId)
+    showToast('⚠️ Arquivo salvo. Execute a sincronização do Drive em /api/drive/sync-projects')
+  }
+}
       } catch (err) {
         console.error(err)
       }
