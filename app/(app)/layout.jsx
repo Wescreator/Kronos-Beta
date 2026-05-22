@@ -1,9 +1,12 @@
 'use client'
+
+export const dynamic = 'force-dynamic'
+
 import { useEffect, useState } from 'react'
-import { usePathname }         from 'next/navigation'
-import { createClient }        from '@/lib/supabase/client'
+import { usePathname } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import Sidebar from '@/components/layout/Sidebar'
-import Topbar  from '@/components/layout/Topbar'
+import Topbar from '@/components/layout/Topbar'
 
 export default function AppLayout({ children }) {
   const [profile,     setProfile]     = useState(null)
