@@ -411,3 +411,406 @@ select option{background:var(--bg3)}
 
 /* Hamburger — escondido no desktop */
 .hamburger-btn { display: none; }
+
+/* =========================================================
+   KRONOS UI ENHANCEMENTS
+========================================================= */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* BACKGROUND MELHORADO */
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+
+  background:
+    radial-gradient(circle at top left,
+      rgba(124,58,237,.12),
+      transparent 35%),
+
+    radial-gradient(circle at bottom right,
+      rgba(37,99,235,.10),
+      transparent 35%);
+
+  z-index: -1;
+}
+
+/* SCROLLBAR PREMIUM */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    var(--purple),
+    var(--blue)
+  );
+
+  border-radius: 999px;
+}
+
+/* TRANSIÇÕES GLOBAIS */
+
+* {
+  transition:
+    background-color .18s ease,
+    border-color .18s ease,
+    color .18s ease,
+    box-shadow .18s ease,
+    transform .18s ease;
+}
+
+/* CARDS MELHORADOS */
+
+.card,
+.proj-card,
+.stat-card,
+.task-card,
+.member-row,
+.file-card,
+.meeting-card,
+.event-card,
+.activity-item,
+.proj-mini-row {
+  backdrop-filter: blur(12px);
+}
+
+/* HOVER PREMIUM */
+
+.card:hover,
+.stat-card:hover,
+.member-row:hover,
+.file-card:hover,
+.meeting-card:hover,
+.event-card:hover {
+  transform: translateY(-2px);
+
+  border-color: rgba(124,58,237,.35);
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.25),
+    0 0 0 1px rgba(124,58,237,.08);
+}
+
+/* TOPBAR GLASS */
+
+.topbar {
+  backdrop-filter: blur(14px);
+
+  background:
+    rgba(15,15,26,.75);
+
+  border-bottom:
+    1px solid rgba(255,255,255,.04);
+}
+
+/* SIDEBAR PREMIUM */
+
+.sidebar {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(15,15,26,.98),
+      rgba(10,10,20,.98)
+    );
+}
+
+/* BOTÕES PREMIUM */
+
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    linear-gradient(
+      120deg,
+      transparent,
+      rgba(255,255,255,.15),
+      transparent
+    );
+
+  transform: translateX(-100%);
+}
+
+.btn-primary:hover::before {
+  transform: translateX(100%);
+  transition: 1s;
+}
+
+/* INPUTS MELHORADOS */
+
+.form-input,
+.form-select,
+.form-textarea,
+.chat-input {
+  background:
+    rgba(255,255,255,.03);
+
+  backdrop-filter: blur(10px);
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus,
+.chat-input:focus {
+  box-shadow:
+    0 0 0 3px rgba(124,58,237,.15);
+}
+
+/* KANBAN */
+
+.task-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.task-card::before {
+  content: '';
+
+  position: absolute;
+
+  left: 0;
+  top: 0;
+  bottom: 0;
+
+  width: 3px;
+
+  background:
+    linear-gradient(
+      180deg,
+      var(--purple),
+      var(--blue)
+    );
+
+  opacity: 0;
+}
+
+.task-card:hover::before {
+  opacity: 1;
+}
+
+/* MODAL MELHORADO */
+
+.modal {
+  backdrop-filter: blur(18px);
+
+  background:
+    rgba(15,15,26,.95);
+
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.55);
+}
+
+/* AVATAR GLOW */
+
+.avatar {
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,.04);
+}
+
+/* BOOT SCREEN */
+
+.boot-screen {
+  position: relative;
+
+  min-height: 100dvh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  background:
+    radial-gradient(
+      circle at top,
+      rgba(124,58,237,.22),
+      transparent 40%
+    ),
+
+    radial-gradient(
+      circle at bottom right,
+      rgba(37,99,235,.18),
+      transparent 40%
+    ),
+
+    #07070d;
+}
+
+.boot-glow {
+  position: absolute;
+
+  width: 700px;
+  height: 700px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(124,58,237,.18),
+      transparent 70%
+    );
+
+  filter: blur(80px);
+}
+
+.boot-card {
+  position: relative;
+
+  width: 420px;
+  max-width: 92vw;
+
+  padding: 38px;
+
+  border-radius: 28px;
+
+  border:
+    1px solid rgba(255,255,255,.06);
+
+  background:
+    rgba(15,15,26,.82);
+
+  backdrop-filter: blur(20px);
+
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.55);
+}
+
+.boot-logo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  margin-bottom: 28px;
+}
+
+.boot-logo-mark {
+  width: 64px;
+  height: 64px;
+
+  border-radius: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 30px;
+  font-weight: 900;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--purple),
+      var(--blue)
+    );
+
+  box-shadow:
+    0 0 40px rgba(124,58,237,.45);
+}
+
+.boot-logo-title {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -1px;
+}
+
+.boot-logo-sub {
+  font-size: 13px;
+  color: var(--text3);
+}
+
+.boot-loader {
+  width: 100%;
+  height: 6px;
+
+  border-radius: 999px;
+
+  overflow: hidden;
+
+  background:
+    rgba(255,255,255,.05);
+
+  margin-bottom: 18px;
+}
+
+.boot-loader-bar {
+  width: 40%;
+
+  height: 100%;
+
+  border-radius: inherit;
+
+  background:
+    linear-gradient(
+      90deg,
+      var(--purple),
+      var(--blue)
+    );
+
+  animation:
+    loadingMove 1.2s infinite ease-in-out;
+}
+
+.boot-msg {
+  font-size: 13px;
+  color: var(--text2);
+}
+
+@keyframes loadingMove {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(350%);
+  }
+}
+
+/* RESPONSIVO EXTRA */
+
+@media (max-width: 768px) {
+
+  .topbar {
+    backdrop-filter: blur(18px);
+  }
+
+  .content {
+    padding: 12px;
+  }
+
+  .boot-card {
+    padding: 28px;
+  }
+
+  .boot-logo-mark {
+    width: 56px;
+    height: 56px;
+    font-size: 26px;
+  }
+
+  .boot-logo-title {
+    font-size: 24px;
+  }
+}
